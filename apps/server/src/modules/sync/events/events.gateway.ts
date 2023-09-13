@@ -11,7 +11,7 @@ import { Server, Socket } from 'socket.io';
 import { encodeStateAsUpdate, encodeStateVector } from 'yjs';
 
 import { Metrics } from '../../../metrics/metrics';
-import { trimGuid } from '../../../utils/doc';
+import { DocID } from '../../../utils/doc';
 import { DocManager } from '../../doc';
 
 @WebSocketGateway({
@@ -68,7 +68,11 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('client-update')
   async handleClientUpdate(
     @MessageBody()
-    message: {
+    {
+      workspaceId,
+      guid,
+      update,
+    }: {
       workspaceId: string;
       guid: string;
       update: string;
@@ -77,28 +81,35 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     this.metric.socketIOEventCounter(1, { event: 'client-update' });
     const endTimer = this.metric.socketIOEventTimer({ event: 'client-update' });
-    const update = Buffer.from(message.update, 'base64');
-    client.to(message.workspaceId).emit('server-update', message);
-    const guid = trimGuid(message.workspaceId, message.guid);
+    const docId = new DocID(guid, workspaceId);
+    client
+      .to(docId.workspace)
+      .emit('server-update', { workspaceId, guid, update });
 
-    await this.docManager.push(message.workspaceId, guid, update);
+    const buf = Buffer.from(update, 'base64');
+
+    await this.docManager.push(docId.workspace, docId.id, buf);
     endTimer();
   }
 
   @SubscribeMessage('doc-load')
   async loadDoc(
     @MessageBody()
-    message: {
+    {
+      workspaceId,
+      guid,
+      stateVector,
+    }: {
       workspaceId: string;
       guid: string;
       stateVector?: string;
-      targetClientId?: number;
     }
   ): Promise<{ missing: string; state?: string } | false> {
     this.metric.socketIOEventCounter(1, { event: 'doc-load' });
     const endTimer = this.metric.socketIOEventTimer({ event: 'doc-load' });
-    const guid = trimGuid(message.workspaceId, message.guid);
-    const doc = await this.docManager.getLatest(message.workspaceId, guid);
+
+    const docId = new DocID(guid, workspaceId);
+    const doc = await this.docManager.getLatest(docId.workspace, docId.id);
 
     if (!doc) {
       endTimer();
@@ -108,9 +119,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const missing = Buffer.from(
       encodeStateAsUpdate(
         doc,
-        message.stateVector
-          ? Buffer.from(message.stateVector, 'base64')
-          : undefined
+        stateVector ? Buffer.from(stateVector, 'base64') : undefined
       )
     ).toString('base64');
     const state = Buffer.from(encodeStateVector(doc)).toString('base64');

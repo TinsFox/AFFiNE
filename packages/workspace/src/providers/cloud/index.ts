@@ -4,6 +4,8 @@ import type { ActiveDocProvider, DocProviderCreator } from '@blocksuite/store';
 import { Workspace } from '@blocksuite/store';
 import type { Doc } from 'yjs';
 
+import { getDocId } from '../../affine/utils';
+
 const Y = Workspace.Y;
 
 const logger = new DebugLogger('affine:cloud');
@@ -14,19 +16,21 @@ export async function downloadBinaryFromCloud(
   rootGuid: string,
   pageGuid: string
 ): Promise<boolean | ArrayBuffer> {
-  if (hashMap.has(`${rootGuid}/${pageGuid}`)) {
+  pageGuid = getDocId(rootGuid, pageGuid);
+
+  if (hashMap.has(pageGuid)) {
     return true;
   }
+
   const response = await fetchWithTraceReport(
-    runtimeConfig.serverUrlPrefix +
-      `/api/workspaces/${rootGuid}/docs/${pageGuid}`,
+    runtimeConfig.serverUrlPrefix + `/api/workspaces/docs/${pageGuid}`,
     {
       priority: 'high',
     }
   );
   if (response.ok) {
     const arrayBuffer = await response.arrayBuffer();
-    hashMap.set(`${rootGuid}/${pageGuid}`, arrayBuffer);
+    hashMap.set(pageGuid, arrayBuffer);
     return arrayBuffer;
   }
   return false;

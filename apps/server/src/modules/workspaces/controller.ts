@@ -13,7 +13,7 @@ import type { Response } from 'express';
 import format from 'pretty-time';
 
 import { StorageProvide } from '../../storage';
-import { trimGuid } from '../../utils/doc';
+import { DocID } from '../../utils/doc';
 import { Auth, CurrentUser, Publicable } from '../auth';
 import { DocManager } from '../doc';
 import { UserType } from '../users';
@@ -54,25 +54,31 @@ export class WorkspacesController {
   }
 
   // get doc binary
-  @Get('/:id/docs/:guid')
+  @Get('/docs/:docId')
   @Auth()
   @Publicable()
   async doc(
     @CurrentUser() user: UserType | undefined,
-    @Param('id') ws: string,
-    @Param('guid') guid: string,
+    @Param('docId') id: string,
     @Res() res: Response
   ) {
     const start = process.hrtime();
-    const id = trimGuid(ws, guid);
+    const docId = new DocID(id);
     if (
       // if a user has the permission
-      !(await this.permission.isAccessible(ws, id, user?.id))
+      !(await this.permission.isAccessible(
+        docId.workspace,
+        docId.guid,
+        user?.id
+      ))
     ) {
       throw new ForbiddenException('Permission denied');
     }
 
-    const update = await this.docManager.getLatestUpdate(ws, id);
+    const update = await this.docManager.getLatestUpdate(
+      docId.workspace,
+      docId.id
+    );
 
     if (!update) {
       throw new NotFoundException('Doc not found');

@@ -73,12 +73,23 @@ export class PermissionService {
       // rootDoc is always accessible when there is a public subpage
       return true;
     } else {
-      // check if this is a public subpage
-
-      // why use `endsWith`?
-      // because there might have `${wsId}:space:${subpageId}`,
-      // but subpages only have `${subpageId}`
-      return subpages.some(subpage => id.endsWith(subpage));
+      // check whether this is a public subpage
+      const workspace = await this.prisma.userWorkspacePermission.findMany({
+        where: {
+          workspaceId: ws,
+          userId: null,
+        },
+      });
+      const subpages = workspace
+        .map(ws => ws.subPageId)
+        .filter((v): v is string => !!v);
+      if (subpages.length > 0 && ws === id) {
+        // rootDoc is always accessible when there is a public subpage
+        return true;
+      } else {
+        // check if this is a public subpage
+        return subpages.some(subpage => id === subpage);
+      }
     }
   }
 

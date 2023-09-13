@@ -18,6 +18,7 @@ config:
     ID: string
     JSON: any
     Upload: File
+    DocID: string
 overwrite: true
 schema: ../../apps/server/src/schema.gql
 documents: ./src/**/*.gql

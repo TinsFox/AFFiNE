@@ -184,8 +184,8 @@ type Mutation {
   acceptInviteById(workspaceId: String!, inviteId: String!, sendAcceptMail: Boolean): Boolean!
   acceptInvite(workspaceId: String!): Boolean!
   leaveWorkspace(workspaceId: String!, workspaceName: String!, sendLeaveMail: Boolean): Boolean!
-  sharePage(workspaceId: String!, pageId: String!): Boolean!
-  revokePage(workspaceId: String!, pageId: String!): Boolean!
+  sharePage(docId: DocID!): Boolean!
+  revokePage(docId: DocID!): Boolean!
   setBlob(workspaceId: String!, blob: Upload!): String!
   deleteBlob(workspaceId: String!, hash: String!): Boolean!
 
@@ -214,3 +214,9 @@ input UpdateWorkspaceInput {
   public: Boolean
   id: ID!
 }
+
+"""
+The universal ID used to describe any entity of a workspace. For instance, a workspace itself, a page, a user setting, etc.
+Either ${workspaceID} or ${workspaceID}:${variant}:${subDocID}
+"""
+scalar DocID

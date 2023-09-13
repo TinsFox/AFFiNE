@@ -366,8 +366,8 @@ export const revokePageMutation = {
   definitionName: 'revokePage',
   containsFile: false,
   query: `
-mutation revokePage($workspaceId: String!, $pageId: String!) {
-  revokePage(workspaceId: $workspaceId, pageId: $pageId)
+mutation revokePage($docId: DocID!) {
+  revokePage(docId: $docId)
 }`,
 };
 
@@ -415,28 +415,6 @@ mutation sendVerifyChangeEmail($token: String!, $email: String!, $callbackUrl: S
 }`,
 };
 
-export const setRevokePageMutation = {
-  id: 'setRevokePageMutation' as const,
-  operationName: 'setRevokePage',
-  definitionName: 'revokePage',
-  containsFile: false,
-  query: `
-mutation setRevokePage($workspaceId: String!, $pageId: String!) {
-  revokePage(workspaceId: $workspaceId, pageId: $pageId)
-}`,
-};
-
-export const setSharePageMutation = {
-  id: 'setSharePageMutation' as const,
-  operationName: 'setSharePage',
-  definitionName: 'sharePage',
-  containsFile: false,
-  query: `
-mutation setSharePage($workspaceId: String!, $pageId: String!) {
-  sharePage(workspaceId: $workspaceId, pageId: $pageId)
-}`,
-};
-
 export const setWorkspacePublicByIdMutation = {
   id: 'setWorkspacePublicByIdMutation' as const,
   operationName: 'setWorkspacePublicById',
@@ -456,8 +434,8 @@ export const sharePageMutation = {
   definitionName: 'sharePage',
   containsFile: false,
   query: `
-mutation sharePage($workspaceId: String!, $pageId: String!) {
-  sharePage(workspaceId: $workspaceId, pageId: $pageId)
+mutation sharePage($docId: DocID!) {
+  sharePage(docId: $docId)
 }`,
 };
 

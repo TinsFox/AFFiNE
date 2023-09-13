@@ -2,6 +2,7 @@ import {
   Inject,
   Injectable,
   Logger,
+  OnApplicationBootstrap,
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
@@ -11,6 +12,7 @@ import { Config } from '../../config';
 import { Metrics } from '../../metrics/metrics';
 import { PrismaService } from '../../prisma';
 import { mergeUpdatesInApplyWay as jwstMergeUpdates } from '../../storage';
+import { DocID } from '../../utils/doc';
 
 function compare(yBinary: Buffer, jwstBinary: Buffer, strict = false): boolean {
   if (yBinary.equals(jwstBinary)) {
@@ -40,7 +42,9 @@ function compare(yBinary: Buffer, jwstBinary: Buffer, strict = false): boolean {
  * @see [RedisUpdateManager](./redis-manager.ts) - redis backed manager
  */
 @Injectable()
-export class DocManager implements OnModuleInit, OnModuleDestroy {
+export class DocManager
+  implements OnModuleInit, OnModuleDestroy, OnApplicationBootstrap
+{
   protected logger = new Logger(DocManager.name);
   private job: NodeJS.Timeout | null = null;
   private busy = false;
@@ -52,6 +56,12 @@ export class DocManager implements OnModuleInit, OnModuleDestroy {
     protected readonly config: Config,
     protected readonly metrics: Metrics
   ) {}
+
+  async onApplicationBootstrap() {
+    if (!this.config.node.test) {
+      await this.refreshGuid();
+    }
+  }
 
   onModuleInit() {
     if (this.automation) {
@@ -163,17 +173,17 @@ export class DocManager implements OnModuleInit, OnModuleDestroy {
   /**
    * add update to manager for later processing like fast merging.
    */
-  async push(workspaceId: string, guid: string, update: Buffer) {
+  async push(workspaceId: string, id: string, update: Buffer) {
     await this.db.update.create({
       data: {
         workspaceId,
-        id: guid,
+        id,
         blob: update,
       },
     });
 
     this.logger.verbose(
-      `pushed update for workspace: ${workspaceId}, guid: ${guid}`
+      `pushed update for workspace: ${workspaceId}, id: ${id}`
     );
   }
 
@@ -182,12 +192,12 @@ export class DocManager implements OnModuleInit, OnModuleDestroy {
    */
   async getSnapshot(
     workspaceId: string,
-    guid: string
+    id: string
   ): Promise<Buffer | undefined> {
     const snapshot = await this.db.snapshot.findFirst({
       where: {
         workspaceId,
-        id: guid,
+        id,
       },
     });
 
@@ -213,9 +223,9 @@ export class DocManager implements OnModuleInit, OnModuleDestroy {
    *
    * latest = snapshot + updates
    */
-  async getLatest(workspaceId: string, guid: string): Promise<Doc | undefined> {
-    const snapshot = await this.getSnapshot(workspaceId, guid);
-    const updates = await this.getUpdates(workspaceId, guid);
+  async getLatest(workspaceId: string, id: string): Promise<Doc | undefined> {
+    const snapshot = await this.getSnapshot(workspaceId, id);
+    const updates = await this.getUpdates(workspaceId, id);
 
     if (updates.length) {
       if (snapshot) {
@@ -237,9 +247,9 @@ export class DocManager implements OnModuleInit, OnModuleDestroy {
    */
   async getLatestUpdate(
     workspaceId: string,
-    guid: string
+    id: string
   ): Promise<Buffer | undefined> {
-    const doc = await this.getLatest(workspaceId, guid);
+    const doc = await this.getLatest(workspaceId, id);
 
     return doc ? Buffer.from(encodeStateAsUpdate(doc)) : undefined;
   }
@@ -302,7 +312,7 @@ export class DocManager implements OnModuleInit, OnModuleDestroy {
     const { id, workspaceId } = updates[0];
 
     this.logger.verbose(
-      `applying ${updates.length} updates for workspace: ${workspaceId}, guid: ${id}`
+      `applying ${updates.length} updates for workspace: ${workspaceId}, id: ${id}`
     );
 
     try {
@@ -339,16 +349,16 @@ export class DocManager implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  protected async upsert(workspaceId: string, guid: string, blob: Buffer) {
+  protected async upsert(workspaceId: string, id: string, blob: Buffer) {
     return this.db.snapshot.upsert({
       where: {
         id_workspaceId: {
-          id: guid,
+          id,
           workspaceId,
         },
       },
       create: {
-        id: guid,
+        id,
         workspaceId,
         blob,
       },
@@ -356,5 +366,98 @@ export class DocManager implements OnModuleInit, OnModuleDestroy {
         blob,
       },
     });
+  }
+
+  /**
+   * deal with old records that has wrong guid format
+   * correct guid with `${non-wsId}:${variant}:${subId}` to `${variant}:${subId}`
+   *
+   * @TODO delete in next release
+   * @deprecated
+   */
+  protected async refreshGuid() {
+    await this.refreshDocGuid();
+    await this.refreshPermissionGuid();
+  }
+
+  protected async refreshPermissionGuid() {
+    let turn = 0;
+    let lastTurnCount = 100;
+    while (lastTurnCount === 100) {
+      const permissions = await this.db.userWorkspacePermission.findMany({
+        skip: turn * 100,
+        take: 100,
+        where: {
+          subPageId: {
+            not: null,
+          },
+        },
+        orderBy: {
+          createdAt: 'asc',
+        },
+      });
+
+      lastTurnCount = permissions.length;
+
+      for (const p of permissions) {
+        if (p.subPageId?.startsWith('space:')) {
+          continue;
+        }
+
+        await this.db.userWorkspacePermission.update({
+          where: {
+            id: p.id,
+          },
+          data: {
+            subPageId: `space:${p.subPageId}`,
+          },
+        });
+      }
+
+      turn++;
+    }
+  }
+
+  protected async refreshDocGuid() {
+    let turn = 0;
+    let lastTurnCount = 100;
+    while (lastTurnCount === 100) {
+      const docs = await this.db.snapshot.findMany({
+        skip: turn * 100,
+        take: 100,
+        orderBy: {
+          createdAt: 'asc',
+        },
+      });
+
+      lastTurnCount = docs.length;
+      for (const doc of docs) {
+        // wrong guid
+        const parsed = DocID.parse(doc.id);
+        if (parsed && !parsed.isWorkspace) {
+          await this.db.$transaction([
+            this.db.snapshot.deleteMany({
+              where: {
+                id: parsed.id,
+                workspaceId: doc.workspaceId,
+              },
+            }),
+            this.db.snapshot.update({
+              where: {
+                id_workspaceId: {
+                  id: doc.id,
+                  workspaceId: doc.workspaceId,
+                },
+              },
+              data: {
+                id: parsed.id,
+              },
+            }),
+          ]);
+        }
+      }
+
+      turn++;
+    }
   }
 }

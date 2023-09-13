@@ -685,10 +685,10 @@ __metadata:
     "@google-cloud/opentelemetry-cloud-trace-exporter": ^2.1.0
     "@keyv/redis": ^2.7.0
     "@napi-rs/image": ^1.6.1
-    "@nestjs/apollo": ^12.0.7
+    "@nestjs/apollo": ^12.0.9
     "@nestjs/common": ^10.2.4
     "@nestjs/core": ^10.2.4
-    "@nestjs/graphql": ^12.0.8
+    "@nestjs/graphql": ^12.0.9
     "@nestjs/platform-express": ^10.2.4
     "@nestjs/platform-socket.io": ^10.2.4
     "@nestjs/testing": ^10.2.4
@@ -5823,15 +5823,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/utils@npm:10.0.1":
-  version: 10.0.1
-  resolution: "@graphql-tools/utils@npm:10.0.1"
+"@graphql-tools/utils@npm:10.0.6":
+  version: 10.0.6
+  resolution: "@graphql-tools/utils@npm:10.0.6"
   dependencies:
     "@graphql-typed-document-node/core": ^3.1.1
+    dset: ^3.1.2
     tslib: ^2.4.0
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-  checksum: fc6412b6914bcae87f825e1cf5998f3c0e54470d00730054b2e079a4e2f19eeb52626294eb62d684f82ff2ae59c6e1c1854664a0e13de9becf40aa857c437e3d
+  checksum: 1eae5ff2056930edf1b5a6aa38a2b28c2b3da0260d4d6babbd3fb25f8638b04c7ea8a481b3e1d4d965d81f2123b577646afb0fe20da87e76362d6f7f099e4be9
   languageName: node
   linkType: hard
 
@@ -7139,14 +7140,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/apollo@npm:^12.0.7":
-  version: 12.0.7
-  resolution: "@nestjs/apollo@npm:12.0.7"
+"@nestjs/apollo@npm:^12.0.9":
+  version: 12.0.9
+  resolution: "@nestjs/apollo@npm:12.0.9"
   dependencies:
     "@apollo/server-plugin-landing-page-graphql-playground": 4.0.0
     iterall: 1.3.0
     lodash.omit: 4.5.0
-    tslib: 2.6.0
+    tslib: 2.6.2
   peerDependencies:
     "@apollo/gateway": ^2.0.0
     "@apollo/server": ^4.3.2
@@ -7163,7 +7164,7 @@ __metadata:
       optional: true
     "@as-integrations/fastify":
       optional: true
-  checksum: fd33cd07673756fc7f9097981ab38a7541a73400effff13f9bce6b8996f3bf3893ad9d101e5b5d4eadbdc8d9a515390bb5c61409a6adf79c82e1ade96259edd6
+  checksum: 6c22eb5f3dc3dab0574f142caa9b8dd0592236baf117e6c06d88cfd0f0a2e43bc2df331429516947f16ba75d20931ed1fd0e6677a39d30128692b90827fa153f
   languageName: node
   linkType: hard
 
@@ -7216,22 +7217,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/graphql@npm:^12.0.8":
-  version: 12.0.8
-  resolution: "@nestjs/graphql@npm:12.0.8"
+"@nestjs/graphql@npm:^12.0.9":
+  version: 12.0.9
+  resolution: "@nestjs/graphql@npm:12.0.9"
   dependencies:
     "@graphql-tools/merge": 9.0.0
     "@graphql-tools/schema": 10.0.0
-    "@graphql-tools/utils": 10.0.1
+    "@graphql-tools/utils": 10.0.6
     "@nestjs/mapped-types": 2.0.2
     chokidar: 3.5.3
-    fast-glob: 3.2.12
+    fast-glob: 3.3.1
     graphql-tag: 2.12.6
     graphql-ws: 5.14.0
     lodash: 4.17.21
     normalize-path: 3.0.0
     subscriptions-transport-ws: 0.11.0
-    tslib: 2.6.0
+    tslib: 2.6.2
     uuid: 9.0.0
     ws: 8.13.0
   peerDependencies:
@@ -7252,7 +7253,7 @@ __metadata:
       optional: true
     ts-morph:
       optional: true
-  checksum: 70d21025cba4d936c3b6097467085d8835be8550eeb7fdc586492254a56437b23da836faba3e56b69f7be31b0dc8078706eaa91081a7618e3b7602217a7b9692
+  checksum: 617373e36065eaf55d313bed4d24fb10909da3c796d52001e9bc6ed23605805627c0b9260a37d33dd5c4f9d65a2083d0972df3630ebee32d49c665e07c4fac43
   languageName: node
   linkType: hard
 
@@ -20500,19 +20501,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-glob@npm:3.2.12":
-  version: 3.2.12
-  resolution: "fast-glob@npm:3.2.12"
-  dependencies:
-    "@nodelib/fs.stat": ^2.0.2
-    "@nodelib/fs.walk": ^1.2.3
-    glob-parent: ^5.1.2
-    merge2: ^1.3.0
-    micromatch: ^4.0.4
-  checksum: 0b1990f6ce831c7e28c4d505edcdaad8e27e88ab9fa65eedadb730438cfc7cde4910d6c975d6b7b8dc8a73da4773702ebcfcd6e3518e73938bb1383badfe01c2
-  languageName: node
-  linkType: hard
-
 "fast-glob@npm:3.2.7":
   version: 3.2.7
   resolution: "fast-glob@npm:3.2.7"
@@ -20526,7 +20514,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-glob@npm:^3.2.11, fast-glob@npm:^3.2.12, fast-glob@npm:^3.2.7, fast-glob@npm:^3.2.9, fast-glob@npm:^3.3.0":
+"fast-glob@npm:3.3.1, fast-glob@npm:^3.2.11, fast-glob@npm:^3.2.12, fast-glob@npm:^3.2.7, fast-glob@npm:^3.2.9, fast-glob@npm:^3.3.0":
   version: 3.3.1
   resolution: "fast-glob@npm:3.3.1"
   dependencies:
@@ -33122,13 +33110,6 @@ __metadata:
     minimist: ^1.2.6
     strip-bom: ^3.0.0
   checksum: 28c5f7bbbcabc9dabd4117e8fdc61483f6872a1c6b02a4b1c4d68c5b79d06896c3cc9547610c4c3ba64658531caa2de13ead1ea1bf321c7b53e969c4752b98c7
-  languageName: node
-  linkType: hard
-
-"tslib@npm:2.6.0":
-  version: 2.6.0
-  resolution: "tslib@npm:2.6.0"
-  checksum: c01066038f950016a18106ddeca4649b4d76caa76ec5a31e2a26e10586a59fceb4ee45e96719bf6c715648e7c14085a81fee5c62f7e9ebee68e77a5396e5538f
   languageName: node
   linkType: hard
 

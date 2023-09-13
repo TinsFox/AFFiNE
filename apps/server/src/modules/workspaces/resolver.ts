@@ -33,6 +33,7 @@ import { PrismaService } from '../../prisma';
 import { StorageProvide } from '../../storage';
 import { CloudThrottlerGuard, Throttle } from '../../throttler';
 import type { FileUpload } from '../../types';
+import { DocID, DocIDScalar } from '../../utils/doc';
 import { Auth, CurrentUser, Public } from '../auth';
 import { MailService } from '../auth/mailer';
 import { AuthService } from '../auth/service';
@@ -643,30 +644,38 @@ export class WorkspaceResolver {
   @Mutation(() => Boolean)
   async sharePage(
     @CurrentUser() user: UserType,
-    @Args('workspaceId') workspaceId: string,
-    @Args('pageId') pageId: string
+    @Args({ name: 'docId', type: () => DocIDScalar }) docId: DocID
   ) {
+    if (docId.isWorkspace) {
+      throw new ForbiddenException('Expect sub doc id');
+    }
+
     const userWorkspace = await this.prisma.userWorkspacePermission.findFirst({
       where: {
         userId: user.id,
-        workspaceId,
+        workspaceId: docId.workspace,
       },
     });
+
     if (!userWorkspace?.accepted) {
       throw new ForbiddenException('Permission denied');
     }
-    return this.permissions.grantPage(workspaceId, pageId);
+
+    return this.permissions.grantPage(docId.workspace, docId.id);
   }
 
   @Mutation(() => Boolean)
   async revokePage(
     @CurrentUser() user: UserType,
-    @Args('workspaceId') workspaceId: string,
-    @Args('pageId') pageId: string
+    @Args({ name: 'docId', type: () => DocIDScalar }) docId: DocID
   ) {
-    await this.permissions.check(workspaceId, user.id, Permission.Admin);
+    if (docId.isWorkspace) {
+      throw new ForbiddenException('Expect sub doc id');
+    }
 
-    return this.permissions.revokePage(workspaceId, pageId);
+    await this.permissions.check(docId.workspace, user.id, Permission.Admin);
+
+    return this.permissions.revokePage(docId.workspace, docId.id);
   }
 
   @Query(() => [String], {

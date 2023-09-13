@@ -285,7 +285,7 @@ async function sharePage(
     .send({
       query: `
           mutation {
-            sharePage(workspaceId: "${workspaceId}", pageId: "${pageId}")
+            sharePage(docId: "${workspaceId}:space:${pageId}")
           }
         `,
     })
@@ -306,7 +306,7 @@ async function revokePage(
     .send({
       query: `
           mutation {
-            revokePage(workspaceId: "${workspaceId}", pageId: "${pageId}")
+            revokePage(docId: "${workspaceId}:space:${pageId}")
           }
         `,
     })

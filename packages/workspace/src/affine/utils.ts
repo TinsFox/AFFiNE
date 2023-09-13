@@ -43,3 +43,21 @@ export function base64ToUint8Array(base64: string) {
   });
   return new Uint8Array(binaryArray);
 }
+
+export function getDocId(workspaceId: string, guid: string) {
+  const parts = guid.split(':');
+
+  // `${workspaceId}`
+  if (parts.length === 1) {
+    return guid;
+  }
+
+  // `${variant}:${id}`
+  if (parts.length === 2) {
+    return `${workspaceId}:${guid}`;
+  }
+
+  // `${workspaceId}:${variant}:${id}`
+  // `${hardcodedId}:${variant}:${id}`
+  return `${workspaceId}:${parts[1]}:${parts[2]}`;
+}

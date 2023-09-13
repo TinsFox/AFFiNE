@@ -28,6 +28,11 @@ export interface Scalars {
   Float: { input: number; output: number };
   /** A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format. */
   DateTime: { input: string; output: string };
+  /**
+   * The universal ID used to describe any entity of a workspace. For instance, a workspace itself, a page, a user setting, etc.
+   * Either ${workspaceID} or ${workspaceID}:${variant}:${subDocID}
+   */
+  DocID: { input: string; output: string };
   /** The `Upload` scalar type represents a file upload. */
   Upload: { input: File; output: File };
 }
@@ -326,8 +331,7 @@ export type RevokeMemberPermissionMutation = {
 };
 
 export type RevokePageMutationVariables = Exact<{
-  workspaceId: Scalars['String']['input'];
-  pageId: Scalars['String']['input'];
+  docId: Scalars['DocID']['input'];
 }>;
 
 export type RevokePageMutation = {
@@ -376,26 +380,6 @@ export type SendVerifyChangeEmailMutation = {
   sendVerifyChangeEmail: boolean;
 };
 
-export type SetRevokePageMutationVariables = Exact<{
-  workspaceId: Scalars['String']['input'];
-  pageId: Scalars['String']['input'];
-}>;
-
-export type SetRevokePageMutation = {
-  __typename?: 'Mutation';
-  revokePage: boolean;
-};
-
-export type SetSharePageMutationVariables = Exact<{
-  workspaceId: Scalars['String']['input'];
-  pageId: Scalars['String']['input'];
-}>;
-
-export type SetSharePageMutation = {
-  __typename?: 'Mutation';
-  sharePage: boolean;
-};
-
 export type SetWorkspacePublicByIdMutationVariables = Exact<{
   id: Scalars['ID']['input'];
   public: Scalars['Boolean']['input'];
@@ -407,8 +391,7 @@ export type SetWorkspacePublicByIdMutation = {
 };
 
 export type SharePageMutationVariables = Exact<{
-  workspaceId: Scalars['String']['input'];
-  pageId: Scalars['String']['input'];
+  docId: Scalars['DocID']['input'];
 }>;
 
 export type SharePageMutation = { __typename?: 'Mutation'; sharePage: boolean };
@@ -636,16 +619,6 @@ export type Mutations =
       name: 'sendVerifyChangeEmailMutation';
       variables: SendVerifyChangeEmailMutationVariables;
       response: SendVerifyChangeEmailMutation;
-    }
-  | {
-      name: 'setRevokePageMutation';
-      variables: SetRevokePageMutationVariables;
-      response: SetRevokePageMutation;
-    }
-  | {
-      name: 'setSharePageMutation';
-      variables: SetSharePageMutationVariables;
-      response: SetSharePageMutation;
     }
   | {
       name: 'setWorkspacePublicByIdMutation';

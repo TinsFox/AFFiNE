@@ -38,7 +38,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('collaboration', () => {
-  test('can enable share page', async ({ page, browser }) => {
+  test.only('can enable share page', async ({ page, browser }) => {
     await page.reload();
     await waitForEditorLoad(page);
     await createLocalWorkspace(

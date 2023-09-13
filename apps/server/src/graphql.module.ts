@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url';
 import { Config } from './config';
 import { GQLLoggerPlugin } from './graphql/logger-plugin';
 import { Metrics } from './metrics/metrics';
+import { DocIDScalar } from './utils/doc';
 
 @Global()
 @Module({
@@ -21,6 +22,9 @@ import { Metrics } from './metrics/metrics';
           path: `${config.path}/graphql`,
           csrfPrevention: {
             requestHeaders: ['content-type'],
+          },
+          resolvers: {
+            DocID: DocIDScalar,
           },
           autoSchemaFile: join(
             fileURLToPath(import.meta.url),

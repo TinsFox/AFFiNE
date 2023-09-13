@@ -133,21 +133,21 @@ test('should share a page', async t => {
   t.is(pages[0], 'page1', 'failed to get shared page: page1');
 
   const resp1 = await request(app.getHttpServer())
-    .get(`/api/workspaces/${workspace.id}/docs/${workspace.id}`)
+    .get(`/api/workspaces/docs/${workspace.id}`)
     .auth(u1.token.token, { type: 'bearer' });
   t.is(resp1.statusCode, 200, 'failed to get root doc with u1 token');
   const resp2 = await request(app.getHttpServer()).get(
-    `/api/workspaces/${workspace.id}/docs/${workspace.id}`
+    `/api/workspaces/docs/${workspace.id}`
   );
   t.is(resp2.statusCode, 200, 'should not get root doc without token');
 
   const resp3 = await request(app.getHttpServer())
-    .get(`/api/workspaces/${workspace.id}/docs/page1`)
+    .get(`/api/workspaces/docs/${workspace.id}:space:page1`)
     .auth(u1.token.token, { type: 'bearer' });
   // 404 because we don't put the page doc to server
   t.is(resp3.statusCode, 404, 'failed to get shared doc with u1 token');
   const resp4 = await request(app.getHttpServer()).get(
-    `/api/workspaces/${workspace.id}/docs/page1`
+    `/api/workspaces/docs/${workspace.id}:space:page1`
   );
   // 404 because we don't put the page doc to server
   t.is(resp4.statusCode, 404, 'should not get shared doc without token');
@@ -192,7 +192,7 @@ test('should can get workspace doc', async t => {
   const workspace = await createWorkspace(app, u1.token.token);
 
   const res1 = await request(app.getHttpServer())
-    .get(`/api/workspaces/${workspace.id}/docs/${workspace.id}`)
+    .get(`/api/workspaces/docs/${workspace.id}`)
     .auth(u1.token.token, { type: 'bearer' })
     .expect(200)
     .type('application/octet-stream');
@@ -204,22 +204,22 @@ test('should can get workspace doc', async t => {
   );
 
   await request(app.getHttpServer())
-    .get(`/api/workspaces/${workspace.id}/docs/${workspace.id}`)
+    .get(`/api/workspaces/docs/${workspace.id}`)
     .expect(403);
   await request(app.getHttpServer())
-    .get(`/api/workspaces/${workspace.id}/docs/${workspace.id}`)
+    .get(`/api/workspaces/docs/${workspace.id}`)
     .auth(u2.token.token, { type: 'bearer' })
     .expect(403);
 
   await inviteUser(app, u1.token.token, workspace.id, u2.email, 'Admin');
   await request(app.getHttpServer())
-    .get(`/api/workspaces/${workspace.id}/docs/${workspace.id}`)
+    .get(`/api/workspaces/docs/${workspace.id}`)
     .auth(u2.token.token, { type: 'bearer' })
     .expect(403);
 
   await acceptInvite(app, u2.token.token, workspace.id);
   const res2 = await request(app.getHttpServer())
-    .get(`/api/workspaces/${workspace.id}/docs/${workspace.id}`)
+    .get(`/api/workspaces/docs/${workspace.id}`)
     .auth(u2.token.token, { type: 'bearer' })
     .expect(200)
     .type('application/octet-stream');
@@ -246,7 +246,7 @@ test('should be able to get public workspace doc', async t => {
   t.true(isPublic, 'failed to publish workspace');
 
   const res = await request(app.getHttpServer())
-    .get(`/api/workspaces/${workspace.id}/docs/${workspace.id}`)
+    .get(`/api/workspaces/docs/${workspace.id}`)
     .expect(200)
     .type('application/octet-stream');
 
