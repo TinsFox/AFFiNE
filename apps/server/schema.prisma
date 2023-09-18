@@ -36,19 +36,21 @@ model UserWorkspacePermission {
 }
 
 model User {
-  id            String                    @id @default(uuid()) @db.VarChar
-  name          String
-  email         String                    @unique
-  emailVerified DateTime?                 @map("email_verified")
+  id                   String                    @id @default(uuid()) @db.VarChar
+  name                 String
+  email                String                    @unique
+  emailVerified        DateTime?                 @map("email_verified")
   // image field is for the next-auth
-  avatarUrl     String?                   @map("avatar_url") @db.VarChar
-  accounts      Account[]
-  sessions      Session[]
-  workspaces    UserWorkspacePermission[]
-  createdAt     DateTime                  @default(now()) @map("created_at") @db.Timestamptz(6)
+  avatarUrl            String?                   @map("avatar_url") @db.VarChar
+  accounts             Account[]
+  sessions             Session[]
+  workspaces           UserWorkspacePermission[]
+  createdAt            DateTime                  @default(now()) @map("created_at") @db.Timestamptz(6)
   /// Not available if user signed up through OAuth providers
-  password      String?                   @db.VarChar
-  features      UserFeatureGates[]
+  password             String?                   @db.VarChar
+  features             UserFeatureGates[]
+  UserLastSubscription UserLastSubscription?
+  UserSubscription     UserSubscription[]
 
   @@map("users")
 }
@@ -160,4 +162,41 @@ model NewFeaturesWaitingList {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   @@map("new_features_waiting_list")
+}
+
+model UserLastSubscription {
+  id        String   @id @default(uuid()) @db.VarChar(36)
+  userId    String   @unique @map("user_id") @db.VarChar(36)
+  plan      String   @db.VarChar
+  sessionId String   @map("session_id") @db.VarChar
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  trialStart DateTime? @map("trial_start") @db.Timestamptz(6)
+  trialEnd   DateTime? @map("trial_end") @db.Timestamptz(6)
+  start      DateTime  @map("start") @db.Timestamptz(6)
+  end        DateTime? @map("end") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_last_subscription")
+}
+
+model UserSubscription {
+  id        String   @id @default(uuid()) @db.VarChar(36)
+  userId    String   @map("user_id") @db.VarChar(36)
+  plan      String   @db.VarChar
+  sessionId String   @unique @map("session_id") @db.VarChar
+  price     Int?     @db.Integer
+  currency  String?  @db.VarChar(3)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  trialStart DateTime? @map("trial_start") @db.Timestamptz(6)
+  trialEnd   DateTime? @map("trial_end") @db.Timestamptz(6)
+  start      DateTime? @map("start") @db.Timestamptz(6)
+  end        DateTime? @map("end") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_subscriptions")
 }
